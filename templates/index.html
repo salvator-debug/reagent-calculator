@@ -1,0 +1,76 @@
+html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Науковий розрахунок реагентів</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f7f9fb;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .card {
+            border: 1px solid #d0d7de;
+        }
+
+        h1, h5 {
+            color: #003366;
+        }
+
+        .result-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5 mb-5">
+    <h1 class="text-center mb-4">Розрахунок витрати реагентів</h1>
+
+    <form method="post" class="bg-white p-4 rounded shadow-sm border">
+        <div class="mb-3">
+            <label class="form-label">ДНК-послідовність:</label>
+            <input type="text" name="sequence" class="form-control" required placeholder="Наприклад: ATCGTGA">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Масштаб синтезу:</label>
+            <select name="scale" class="form-select" required>
+                <option value="" disabled selected>Оберіть</option>
+                <option value="праймер">Праймер</option>
+                <option value="0.2мм">0.2 ммоль</option>
+                <option value="1мм">1 ммоль</option>
+                <option value="10мм">10 ммоль</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Розрахувати</button>
+    </form>
+
+    {% if result %}
+        {% if result.error %}
+            <div class="alert alert-danger mt-4">{{ result.error }}</div>
+        {% else %}
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h5 class="card-title">Результати розрахунку</h5>
+                    <ul class="list-group list-group-flush mt-3">
+                        <li class="list-group-item"><span class="result-label">A:</span> {{ result.A }}%</li>
+                        <li class="list-group-item"><span class="result-label">T:</span> {{ result.T }}%</li>
+                        <li class="list-group-item"><span class="result-label">G:</span> {{ result.G }}%</li>
+                        <li class="list-group-item"><span class="result-label">C:</span> {{ result.C }}%</li>
+                        <li class="list-group-item"><span class="result-label">Тетразол:</span> {{ result.tetrazole }} мл ({{ result.tetrazole_percent }}%)</li>
+                        <li class="list-group-item"><span class="result-label">Кислотний ангідрид:</span> {{ result.anhydride }} мл ({{ result.anhydride_percent }}%)</li>
+                        <li class="list-group-item"><span class="result-label">NMI:</span> {{ result.nmi }} мл ({{ result.nmi_percent }}%)</li>
+                        <li class="list-group-item"><span class="result-label">TCA:</span> {{ result.tca }} мл ({{ result.tca_percent }}%)</li>
+                        <li class="list-group-item"><span class="result-label">Йод:</span> {{ result.iodine }} мл ({{ result.iodine_percent }}%)</li>
+                        <li class="list-group-item"><span class="result-label">Ацетонітрил:</span> {{ result.acn }} мл ({{ result.acn_percent }}%)</li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+</body>
+</html>
