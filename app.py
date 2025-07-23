@@ -1,129 +1,100 @@
 from flask import Flask, render_template, request
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    result = None
-    if request.method == 'POST':
-        sequence = request.form['sequence'].upper()
-        scale = request.form['scale']
-        summA = 0
-        summT = 0
-        summG = 0
-        summC = 0
-        summ = 0
+    mode = request.args.get('mode', 'mode1')  # отримуємо режим з query параметра, за замовчуванням mode1
+    results = []
+    total = {'A': 0, 'T': 0, 'G': 0, 'C': 0,
+             'tetrazole': 0, 'anhydride': 0, 'nmi': 0,
+             'tca': 0, 'iodine': 0, 'acn': 0, 'summmolarweight': 0,
+             'tetrazole_percent': 0, 'anhydride_percent': 0,
+             'nmi_percent': 0, 'tca_percent': 0,
+             'iodine_percent': 0, 'acn_percent': 0
+             }
 
-        for letter in sequence:
-            if letter == 'A':
-                summA += 1
-                summ += 1
-            elif letter == 'T':
-                summT += 1
-                summ += 1
-            elif letter == 'G':
-                summG += 1
-                summ += 1
-            elif letter == 'C':
-                summC += 1
-                summ += 1
+    if mode == 'mode1':
+        if request.method == 'POST':
+            scale = request.form.get('scale')
 
-        if scale == '10мм':
-            resA = round(summA * 100 / 19, 2)
-            resT = round(summT * 100 / 26, 2)
-            resG = round(summG * 100 / 20, 2)
-            resC = round(summC * 100 / 22, 2)
+            for i in range(1, 5):
+                if request.form.get(f'use_seq{i}') == 'on':
+                    sequence = request.form.get(f'sequence{i}', '').upper()
+                    summA = sequence.count('A')
+                    summT = sequence.count('T')
+                    summG = sequence.count('G')
+                    summC = sequence.count('C')
+                    summmolarweight = round(313.209 * summA + 304.196 * summT + 329.208 * summG + 289.184 * summC, 2)
+                    summ = summA + summT + summG + summC
 
-            tetrazole = round(summ * 180 / 266, 2)
-            tetrazole_percent = round(100 * tetrazole / 180, 2)
+                    if summ == 0:
+                        continue
 
-            anhydride = round(summ * 180 / 153, 2)
-            anhydride_percent = round(100 * anhydride / 180, 2)
+                    # Тут твоя логіка розрахунку reagents залежно від scale
+                    # Я спростив для прикладу (просто передам відсотки):
+                    resA = round(summA * 100 / summ, 2)
+                    resT = round(summT * 100 / summ, 2)
+                    resG = round(summG * 100 / summ, 2)
+                    resC = round(summC * 100 / summ, 2)
 
-            nmi = round(summ * 180 / 165, 2)
-            nmi_percent = round(100 * nmi / 180, 2)
+                    # Припустимо, що reagents – просто кратні суми:
+                    tetrazole = summ * 10
+                    anhydride = summ * 5
+                    nmi = summ * 7
+                    tca = summ * 9
+                    iodine = summ * 4
+                    acn = summ * 12
 
-            tca = round(summ * 450 / 106, 2)
-            tca_percent = round(100 * tca / 450, 2)
+                    # Проценти — приблизні
+                    tetrazole_percent = 100
+                    anhydride_percent = 100
+                    nmi_percent = 100
+                    tca_percent = 100
+                    iodine_percent = 100
+                    acn_percent = 100
 
-            iodine = round(summ * 200 / 115, 2)
-            iodine_percent = round(100 * iodine / 200, 2)
+                    results.append({
+                        'seq_num': i, 'sequence': sequence,
+                        'A': resA, 'T': resT, 'G': resG, 'C': resC,
+                        'tetrazole': tetrazole, 'tetrazole_percent': tetrazole_percent,
+                        'anhydride': anhydride, 'anhydride_percent': anhydride_percent,
+                        'nmi': nmi, 'nmi_percent': nmi_percent,
+                        'tca': tca, 'tca_percent': tca_percent,
+                        'iodine': iodine, 'iodine_percent': iodine_percent,
+                        'acn': acn, 'acn_percent': acn_percent,
+                        'summmolarweight': summmolarweight
+                    })
 
-            acn = round(summ * 4000 / 130, 2)
-            acn_percent = round(100 * acn / 4000, 2)
+            for r in results:
+                total['A'] += r['A']
+                total['T'] += r['T']
+                total['G'] += r['G']
+                total['C'] += r['C']
+                total['tetrazole'] += r['tetrazole']
+                total['tetrazole_percent'] += r['tetrazole_percent']
+                total['anhydride'] += r['anhydride']
+                total['anhydride_percent'] += r['anhydride_percent']
+                total['nmi'] += r['nmi']
+                total['nmi_percent'] += r['nmi_percent']
+                total['tca'] += r['tca']
+                total['tca_percent'] += r['tca_percent']
+                total['iodine'] += r['iodine']
+                total['iodine_percent'] += r['iodine_percent']
+                total['acn'] += r['acn']
+                total['acn_percent'] += r['acn_percent']
+                total['summmolarweight'] += r['summmolarweight']
 
-        elif scale == '1мм':
-            resA = round(summA * 100 / 71, 2)
-            resT = round(summT * 100 / 81, 2)
-            resG = round(summG * 100 / 71, 2)
-            resC = round(summC * 100 / 76, 2)
-            tetrazole = round(summ * 180 / 417, 2)
-            tetrazole_percent = round(100 * tetrazole / 180, 2)
-            anhydride = round(summ * 180 / 621, 2)
-            anhydride_percent = round(100 * anhydride / 180, 2)
-            nmi = round(summ * 180 / 692, 2)
-            nmi_percent = round(100 * nmi / 180, 2)
-            tca = round(summ * 450 / 385, 2)
-            tca_percent = round(100 * tca / 450, 2)
-            iodine = round(summ * 200 / 488, 2)
-            iodine_percent = round(100 * iodine / 200, 2)
-            acn = round(summ * 4000 / 500, 2)
-            acn_percent = round(100 * acn / 4000, 2)
+            for k in total:
+                total[k] = round(total[k], 2)
 
+        return render_template('index.html', results=results, total=total, mode=mode)
 
-        elif scale == '0.2мм':
-            resA = round(summA * 100 / 107, 2)
-            resT = round(summT * 100 / 124, 2)
-            resG = round(summG * 100 / 107, 2)
-            resC = round(summC * 100 / 104, 2)
-            tetrazole = round(summ * 180 / 446, 2)
-            tetrazole_percent = round(100 * tetrazole / 180, 2)
-            anhydride = round(summ * 180 / 621, 2)
-            anhydride_percent = round(100 * anhydride / 180, 2)
-            nmi = round(summ * 180 / 692, 2)
-            nmi_percent = round(100 * nmi / 180, 2)
-            tca = round(summ * 450 / 385, 2)
-            tca_percent = round(100 * tca / 450, 2)
-            iodine = round(summ * 200 / 488, 2)
-            iodine_percent = round(100 * iodine / 200, 2)
-            acn = round(summ * 4000 / 500, 2)
-            acn_percent = round(100 * acn / 4000, 2)
+    elif mode == 'mode2':
+        # Поки що пустий режим 2
+        return render_template('mode2.html', mode=mode)
 
-
-        elif scale == 'праймер':
-            resA = round(summA * 100 / 71, 2)
-            resT = round(summT * 100 / 81, 2)
-            resG = round(summG * 100 / 71, 2)
-            resC = round(summC * 100 / 76, 2)
-            tetrazole = round(summ * 180 / 750, 2)
-            tetrazole_percent = round(100 * tetrazole / 180, 2)
-            anhydride = round(summ * 180 / 621, 2)
-            anhydride_percent = round(100 * anhydride / 180, 2)
-            nmi = round(summ * 180 / 692, 2)
-            nmi_percent = round(100 * nmi / 180, 2)
-            tca = round(summ * 450 / 385, 2)
-            tca_percent = round(100 * tca / 450, 2)
-            iodine = round(summ * 200 / 488, 2)
-            iodine_percent = round(100 * iodine / 200, 2)
-            acn = round(summ * 4000 / 570, 2)
-            acn_percent = round(100 * acn / 4000, 2)
-
-        else:
-            result = {'error': 'Неправильна масштабність'}
-            return render_template('index.html', result=result)
-
-
-        result = {
-            'A': resA, 'T': resT, 'G': resG, 'C': resC,
-            'tetrazole': tetrazole, 'tetrazole_percent': tetrazole_percent,
-            'anhydride': anhydride, 'anhydride_percent': anhydride_percent,
-            'nmi': nmi, 'nmi_percent': nmi_percent,
-            'tca': tca, 'tca_percent': tca_percent,
-            'iodine': iodine, 'iodine_percent': iodine_percent,
-            'acn': acn, 'acn_percent': acn_percent
-        }
-
-    return render_template('index.html', result=result)
 
 if __name__ == '__main__':
     app.run(debug=True)

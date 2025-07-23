@@ -1,41 +1,25 @@
-html lang="uk">
+<!DOCTYPE html>
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <title>Науковий розрахунок реагентів</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f7f9fb;
-            font-family: "Segoe UI", sans-serif;
-        }
-
-        .card {
-            border: 1px solid #d0d7de;
-        }
-
-        h1, h5 {
-            color: #003366;
-        }
-
-        .result-label {
-            font-weight: bold;
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <title>Розрахунок реагентів - Режим 1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
+<div class="container mt-4">
 
-<div class="container mt-5 mb-5">
-    <h1 class="text-center mb-4">Розрахунок витрати реагентів</h1>
+    <h1>Розрахунок реагентів</h1>
 
-    <form method="post" class="bg-white p-4 rounded shadow-sm border">
+    <!-- Перемикач режимів -->
+    <nav class="mb-3">
+        <a href="/?mode=mode1" class="btn btn-primary {% if mode == 'mode1' %}active{% endif %}">Режим 1</a>
+        <a href="/?mode=mode2" class="btn btn-secondary {% if mode == 'mode2' %}active{% endif %}">Режим 2</a>
+    </nav>
+
+    <form method="post">
         <div class="mb-3">
-            <label class="form-label">ДНК-послідовність:</label>
-            <input type="text" name="sequence" class="form-control" required placeholder="Наприклад: ATCGTGA">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Масштаб синтезу:</label>
-            <select name="scale" class="form-select" required>
+            <label for="scale" class="form-label">Масштаб синтезу:</label>
+            <select name="scale" id="scale" class="form-select" required>
                 <option value="" disabled selected>Оберіть</option>
                 <option value="праймер">Праймер</option>
                 <option value="0.2мм">0.2 ммоль</option>
@@ -44,33 +28,66 @@ html lang="uk">
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Розрахувати</button>
+        <div class="row">
+            {% for i in range(1,5) %}
+            <div class="col-md-3 mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="use_seq{{ i }}" name="use_seq{{ i }}">
+                    <label class="form-check-label" for="use_seq{{ i }}">Колонка {{ i }}</label>
+                </div>
+                <input type="text" class="form-control" name="sequence{{ i }}" placeholder="Послідовність {{ i }}">
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-success">Розрахувати</button>
     </form>
 
-    {% if result %}
-        {% if result.error %}
-            <div class="alert alert-danger mt-4">{{ result.error }}</div>
-        {% else %}
-            <div class="card mt-5">
+    {% if results %}
+    <h2 class="mt-4">Результати</h2>
+
+    <div class="row">
+        {% for r in results %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Результати розрахунку</h5>
-                    <ul class="list-group list-group-flush mt-3">
-                        <li class="list-group-item"><span class="result-label">A:</span> {{ result.A }}%</li>
-                        <li class="list-group-item"><span class="result-label">T:</span> {{ result.T }}%</li>
-                        <li class="list-group-item"><span class="result-label">G:</span> {{ result.G }}%</li>
-                        <li class="list-group-item"><span class="result-label">C:</span> {{ result.C }}%</li>
-                        <li class="list-group-item"><span class="result-label">Тетразол:</span> {{ result.tetrazole }} мл ({{ result.tetrazole_percent }}%)</li>
-                        <li class="list-group-item"><span class="result-label">Кислотний ангідрид:</span> {{ result.anhydride }} мл ({{ result.anhydride_percent }}%)</li>
-                        <li class="list-group-item"><span class="result-label">NMI:</span> {{ result.nmi }} мл ({{ result.nmi_percent }}%)</li>
-                        <li class="list-group-item"><span class="result-label">TCA:</span> {{ result.tca }} мл ({{ result.tca_percent }}%)</li>
-                        <li class="list-group-item"><span class="result-label">Йод:</span> {{ result.iodine }} мл ({{ result.iodine_percent }}%)</li>
-                        <li class="list-group-item"><span class="result-label">Ацетонітрил:</span> {{ result.acn }} мл ({{ result.acn_percent }}%)</li>
+                    <h5>Колонка {{ r.seq_num }}</h5>
+                    <p><strong>Послідовність:</strong> {{ r.sequence }}</p>
+                    <ul>
+                        <li>A: {{ r.A }}%</li>
+                        <li>T: {{ r.T }}%</li>
+                        <li>G: {{ r.G }}%</li>
+                        <li>C: {{ r.C }}%</li>
+                        <li>Тетразол: {{ r.tetrazole }} мл</li>
+                        <li>Кислотний ангідрид: {{ r.anhydride }} мл</li>
+                        <li>NMI: {{ r.nmi }} мл</li>
+                        <li>TCA: {{ r.tca }} мл</li>
+                        <li>Йод: {{ r.iodine }} мл</li>
+                        <li>Ацетонітрил: {{ r.acn }} мл</li>
+                        <li>Молярна маса: {{ r.summmolarweight }} г/моль</li>
                     </ul>
                 </div>
             </div>
-        {% endif %}
-    {% endif %}
-</div>
+        </div>
+        {% endfor %}
+    </div>
 
+    <h3>Сумарна витрата реагентів:</h3>
+    <ul>
+        <li>A: {{ total.A }}%</li>
+        <li>T: {{ total.T }}%</li>
+        <li>G: {{ total.G }}%</li>
+        <li>C: {{ total.C }}%</li>
+        <li>Тетразол: {{ total.tetrazole }} мл</li>
+        <li>Кислотний ангідрид: {{ total.anhydride }} мл</li>
+        <li>NMI: {{ total.nmi }} мл</li>
+        <li>TCA: {{ total.tca }} мл</li>
+        <li>Йод: {{ total.iodine }} мл</li>
+        <li>Ацетонітрил: {{ total.acn }} мл</li>
+        <li>Молярна маса: {{ total.summmolarweight }} г/моль</li>
+    </ul>
+    {% endif %}
+
+</div>
 </body>
 </html>
